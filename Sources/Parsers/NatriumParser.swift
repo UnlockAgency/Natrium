@@ -65,7 +65,7 @@ class NatriumParser {
 
         Logger.log(key: "natrium_variables", natriumVariables)
         var targetSpecific: [String: [String: Yaml]] = [:]
-        if let targetSpecificDictionary = yaml["target_specific"][Yaml.string(natrium.targetName)].dictionary {
+        if let targetSpecificDictionary = try parseValue(yaml["target_specific"][Yaml.string(natrium.targetName)]).dictionary {
             Logger.debug("[target_specific]")
             Logger.insets += 1
             Logger.log(Logger.colorWrap(text: natrium.targetName, in: "4;1"))
@@ -214,6 +214,22 @@ class NatriumParser {
             }
         }
     }
+    
+    private func parseValue(_ yaml: Yaml) throws -> Yaml {
+        guard yaml.stringValue.hasPrefix("!include") else {
+            return yaml
+        }
+        var path = yaml.stringValue
+        path.removeFirst(9)
+        path = "\(natrium.projectDirPath)/\(path)"
+        
+        guard let contents = File(path: path).contents else {
+            throw NatriumError("Error reading !include \(path)")
+        }
+        
+        Logger.info("!include \(path)")
+        return try Yaml.load(contents)
+    }
 
     /// Convert a yaml entry (for a specific key) into a dictionary
     ///
@@ -226,9 +242,18 @@ class NatriumParser {
     ///
     /// - returns: `[String: Yaml]`
     func parse(_ yaml: Yaml, key yamlKey: String) throws -> [String: Yaml] {
-        guard yaml != .null,
-            let dictionary = yaml[Yaml.string(yamlKey)].dictionary else {
+        guard yaml != .null else {
             return [:]
+        }
+        
+        var dictionary: [Yaml: Yaml] = [:]
+        if let readDictionary = yaml[Yaml.string(yamlKey)].dictionary {
+            dictionary = readDictionary
+        } else {
+            if yaml[Yaml.string(yamlKey)].string != nil {
+                let parsedYaml = try parseValue(yaml[Yaml.string(yamlKey)])
+                dictionary = parsedYaml.dictionary ?? [:]
+            }
         }
 
         if yamlKey == "plists" {
@@ -239,7 +264,7 @@ class NatriumParser {
 
             return Dictionary(uniqueKeysWithValues: sequence)
         }
-
+        
         var returnDictionary: [String: Yaml] = [:]
         // Global
         for globalObj in dictionary {
@@ -248,12 +273,12 @@ class NatriumParser {
             }
 
             if globalObj.value.array != nil && yamlKey != "appicon" {
-                returnDictionary[key] = globalObj.value
+                returnDictionary[key] = try parseValue(globalObj.value)
                 continue
             }
 
             guard let globalObjDictionary = globalObj.value.dictionary else {
-                returnDictionary[key] = globalObj.value
+                returnDictionary[key] = try parseValue(globalObj.value)
                 continue
             }
 
@@ -267,7 +292,7 @@ class NatriumParser {
                 }
                 
                 guard let environmentObjDictionary = environmentObj.value.dictionary else {
-                    returnDictionary[key] = environmentObj.value
+                    returnDictionary[key] = try parseValue(environmentObj.value)
                     continue
                 }
 
@@ -280,10 +305,10 @@ class NatriumParser {
                         continue
                     }
                     if yamlKey == "xcconfig" {
-                        returnDictionary[key] = environmentObj.value
+                        returnDictionary[key] = try parseValue(environmentObj.value)
                         break
                     }
-                    returnDictionary[key] = configurationObj.value
+                    returnDictionary[key] = try parseValue(configurationObj.value)
                 } // :Configuration
             } // :Environment
         } // :Global

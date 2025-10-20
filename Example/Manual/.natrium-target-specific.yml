@@ -1,0 +1,5 @@
+variables:
+  testVariableString: "Target #2"
+plists:
+  "NatriumExampleManualProject/Info.plist":
+    CFBundleDisplayName: "App #2"

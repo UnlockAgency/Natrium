@@ -11,7 +11,7 @@ import Yaml
 import Francium
 
 class Natrium {
-    static var version: String = "8.3.5"
+    static var version: String = "8.4.0"
 
     let projectDirPath: String
     let targetName: String

@@ -1,0 +1,21 @@
+nilVariable: null
+testVariableDouble:
+    Staging: 1.0
+    Production: 5.5
+
+testVariableString:
+    Staging,Production:
+        Debug: "#{DebugString}"
+        Release: "releaseString"
+testVariableBoolean: false
+testVariableInteger: 125
+testArray:
+  - "#{DebugString}1"
+  - "#{DebugString}2"
+testArray2:
+  Staging:
+    - StagingFoo
+    - StagingBar
+  Production:
+    - ProductionFoo
+    - ProductionBar

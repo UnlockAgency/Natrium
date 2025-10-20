@@ -25,28 +25,7 @@ xcconfig:
             Debug: com.esites.app.production
             Release: com.esites.app
 
-variables:
-  nilVariable: null
-  testVariableDouble:
-      Staging: 1.0
-      Production: 5.5
-
-  testVariableString:
-      Staging,Production:
-          Debug: "#{DebugString}"
-          Release: "releaseString"
-  testVariableBoolean: false
-  testVariableInteger: 125
-  testArray:
-    - "#{DebugString}1"
-    - "#{DebugString}2"
-  testArray2:
-    Staging:
-      - StagingFoo
-      - StagingBar
-    Production:
-      - ProductionFoo
-      - ProductionBar
+variables: !include .natrium-variables.yml
 
 files:
   Files/file.html:
@@ -66,12 +45,8 @@ appicon:
         Staging: "STAGING"
 
 target_specific:
-  NatriumExampleManualProject:
-    variables:
-      testVariableString: "Target #2"
-    plists:
-      "NatriumExampleManualProject/Info.plist":
-        CFBundleDisplayName: "App #2"
+  NatriumExampleManualProject: !include .natrium-target-specific.yml
+    
 
 # launch_screen_versioning:
 #     path: NatriumExampleManualProject/Base.lproj/LaunchScreen.storyboard

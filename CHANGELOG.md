@@ -1,5 +1,8 @@
 # Changelog Natrium
 
+## v8.4.0 (20-10-2025)
+- !include
+
 ## v8.3.5 (21-03-2025)
 - Fixed fatal error when creating temporary file
 
